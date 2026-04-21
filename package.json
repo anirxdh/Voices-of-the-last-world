@@ -1,0 +1,19 @@
+{
+  "name": "voices-of-the-last-world",
+  "version": "1.0.0",
+  "description": "Cinematic Kiro + ElevenLabs crisis simulation experience",
+  "type": "module",
+  "scripts": {
+    "develop": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite --host 0.0.0.0"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  }
+}
