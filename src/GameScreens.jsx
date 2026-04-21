@@ -87,66 +87,6 @@ export function IntroScreen({
   );
 }
 
-export function OnboardingScreen({
-  operatorName,
-  apiKeyInput,
-  onboardingBusy,
-  onboardingError,
-  onboardingStatus,
-  typedPrompt,
-  onNameChange,
-  onApiKeyChange,
-  onSubmit
-}) {
-  return (
-    <section className="onboarding-screen" aria-label="Operator onboarding">
-      <div className="onboarding-backdrop" />
-      <form className="onboarding-panel" onSubmit={onSubmit}>
-        <p className="eyebrow">Archive Handshake</p>
-        <h2 className="onboarding-title">Welcome, future operator.</h2>
-        <p className="onboarding-typewriter">
-          {typedPrompt}
-          <span className="typewriter-caret" aria-hidden="true" />
-        </p>
-        <label className="onboarding-field">
-          <span>Operator Name</span>
-          <input
-            type="text"
-            value={operatorName}
-            onChange={onNameChange}
-            placeholder="Enter your name"
-            autoComplete="name"
-            disabled={onboardingBusy}
-          />
-        </label>
-        <label className="onboarding-field">
-          <span>ElevenLabs API Key</span>
-          <input
-            type="password"
-            value={apiKeyInput}
-            onChange={onApiKeyChange}
-            placeholder="Paste your ElevenLabs key"
-            autoComplete="off"
-            disabled={onboardingBusy}
-          />
-        </label>
-        <p className="onboarding-note">The Archive will use this key for mission voices during this session.</p>
-        {onboardingError ? <p className="onboarding-error">{onboardingError}</p> : null}
-        {onboardingStatus ? <p className="onboarding-status">{onboardingStatus}</p> : null}
-        <div className="bottom-actions stretch">
-          <button
-            type="submit"
-            className="primary-button"
-            disabled={!operatorName.trim() || !apiKeyInput.trim() || onboardingBusy}
-          >
-            Continue As {operatorName.trim() || "Operator"}
-          </button>
-        </div>
-      </form>
-    </section>
-  );
-}
-
 export function ScenarioScreen({ operatorLabel, currentScenario, scenarioIndex, scenarios, onMoveScenario, onSelectScenario, onContinue }) {
   return (
     <section className="scenario-panel">

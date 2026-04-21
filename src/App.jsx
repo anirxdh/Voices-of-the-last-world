@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { buildGreeting, buildResultNarration, fallbackAgents, getRosterEntry, INTRO_STORYLINE, ONBOARDING_PROMPT, roster } from "./appContent.jsx";
+import { buildResultNarration, fallbackAgents, getRosterEntry, INTRO_STORYLINE, roster } from "./appContent.jsx";
 import { AUDIO, BACKGROUNDS, VIDEOS } from "./media.js";
 import { runSimulationEngine } from "./engine.js";
 import {
@@ -7,7 +7,6 @@ import {
   ChoiceScreen,
   DebateScreen,
   IntroScreen,
-  OnboardingScreen,
   ResultScreen,
   ScenarioScreen,
   SelectionScreen
@@ -23,8 +22,7 @@ import {
   estimateSpeechDurationMs,
   setElevenLabsApiKey,
   speakAgentLine,
-  stopVoicePlayback,
-  validateElevenLabsApiKey
+  stopVoicePlayback
 } from "./voice.js";
 
 export default function App() {
@@ -32,13 +30,6 @@ export default function App() {
   const [introAudioEnabled, setIntroAudioEnabled] = useState(false);
   const [bgmMuted, setBgmMuted] = useState(false);
   const [bgmVolume, setBgmVolume] = useState(0.055);
-  const [operatorName, setOperatorName] = useState("Operator");
-  const [apiKeyInput, setApiKeyInput] = useState(() => import.meta.env.VITE_ELEVENLABS_API_KEY || "");
-  const [onboardingComplete, setOnboardingComplete] = useState(true);
-  const [typedPrompt, setTypedPrompt] = useState("");
-  const [onboardingBusy, setOnboardingBusy] = useState(false);
-  const [onboardingStatus, setOnboardingStatus] = useState("");
-  const [onboardingError, setOnboardingError] = useState("");
   const [phase, setPhase] = useState("scenario");
   const [selectedAgents, setSelectedAgents] = useState([]);
   const [currentScenario, setCurrentScenario] = useState(() => SCENARIOS[0]);
@@ -59,13 +50,12 @@ export default function App() {
   const typingIntervalRef = useRef(null);
 
   const introVisible = introStage < 2;
-  const showOnboarding = !introVisible && !onboardingComplete;
   const activeScenario = phase === "scenario" ? currentScenario : selectedScenario;
   const simulationAgents = selectedAgents.length === 2 ? selectedAgents : fallbackAgents;
   const activeDebateRoster = selectedAgents.length === 2 ? selectedAgents : simulation.selected_agents;
   const activeLine = activeVoiceIndex >= 0 ? simulation.conversation[activeVoiceIndex] : null;
   const appBackground = phase === "scenario" ? BACKGROUNDS.app : activeScenario.backdrop || BACKGROUNDS.app;
-  const operatorLabel = operatorName.trim() || "Operator";
+  const operatorLabel = "Operator";
 
   const fallbackPreview = useMemo(
     () => simulateScenario(activeScenario, simulationAgents),
@@ -98,7 +88,6 @@ export default function App() {
       lastDebateMessage.text !== activeLine.text);
   const shouldPlayAmbient =
     !introVisible &&
-    !showOnboarding &&
     (phase === "scenario" ||
       phase === "selection" ||
       phase === "decision" ||
@@ -132,22 +121,6 @@ export default function App() {
     audio.pause();
     audio.currentTime = 0;
   }, [bgmMuted, bgmVolume, shouldPlayAmbient]);
-
-  useEffect(() => {
-    if (!showOnboarding) return undefined;
-
-    setTypedPrompt("");
-    let index = 0;
-    const timer = window.setInterval(() => {
-      index += 1;
-      setTypedPrompt(ONBOARDING_PROMPT.slice(0, index));
-      if (index >= ONBOARDING_PROMPT.length) {
-        window.clearInterval(timer);
-      }
-    }, 24);
-
-    return () => window.clearInterval(timer);
-  }, [showOnboarding]);
 
   useEffect(() => {
     if (!introVisible) {
@@ -288,14 +261,9 @@ export default function App() {
   useEffect(() => {
     const envApiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
     if (envApiKey) {
-      setApiKeyInput(envApiKey);
       setElevenLabsApiKey(envApiKey);
     }
   }, []);
-
-  useEffect(() => {
-    setElevenLabsApiKey(apiKeyInput);
-  }, [apiKeyInput]);
 
   function toggleAgent(name) {
     setSelectedAgents((current) => {
@@ -362,39 +330,6 @@ export default function App() {
     setPhase("result");
   }
 
-  async function continueAsOperator(event) {
-    event.preventDefault();
-    const cleanName = operatorName.trim();
-    const cleanKey = apiKeyInput.trim();
-    if (!cleanName || !cleanKey || onboardingBusy) return;
-
-    setOnboardingBusy(true);
-    setOnboardingError("");
-    setOnboardingStatus("Connecting your voice authorization...");
-    const validation = await validateElevenLabsApiKey(cleanKey);
-
-    if (!validation.ok) {
-      setOnboardingBusy(false);
-      setOnboardingStatus("");
-      setOnboardingError(validation.message);
-      return;
-    }
-
-    localStorage.setItem("archive-operator-name", cleanName);
-    localStorage.setItem("archive-elevenlabs-key", cleanKey);
-    setElevenLabsApiKey(cleanKey);
-    setOperatorName(cleanName);
-
-    try {
-      setOnboardingStatus("Archive is addressing you...");
-      await speakAgentLine("Core AI", buildGreeting(cleanName));
-    } catch {}
-
-    setOnboardingStatus("");
-    setOnboardingBusy(false);
-    setOnboardingComplete(true);
-  }
-
   return (
     <main className="app-shell">
       <audio ref={ambientAudioRef} src={AUDIO.ambient} loop preload="auto" />
@@ -423,20 +358,6 @@ export default function App() {
           onToggleIntroAudio={() => setIntroAudioEnabled((value) => !value)}
           onSkipIntro={() => setIntroStage(2)}
           onIntroEnded={() => setIntroStage(2)}
-        />
-      ) : null}
-
-      {showOnboarding ? (
-        <OnboardingScreen
-          operatorName={operatorName}
-          apiKeyInput={apiKeyInput}
-          onboardingBusy={onboardingBusy}
-          onboardingError={onboardingError}
-          onboardingStatus={onboardingStatus}
-          typedPrompt={typedPrompt}
-          onNameChange={(event) => setOperatorName(event.target.value)}
-          onApiKeyChange={(event) => setApiKeyInput(event.target.value)}
-          onSubmit={continueAsOperator}
         />
       ) : null}
 
