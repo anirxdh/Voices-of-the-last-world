@@ -1,6 +1,17 @@
 import React from "react";
 import { AGENTS } from "./simulator.js";
 
+function summarizeStrength(agent) {
+  return agent.strengths.slice(0, 2).join(" / ");
+}
+
+function summarizeWeakness(agent) {
+  const weakness = agent.weaknesses.find((value) => !["trust", "low trust", "slow decisions", "slower urgency"].includes(value))
+    ?? agent.weaknesses[0]
+    ?? "limited flexibility";
+  return weakness;
+}
+
 export function BackgroundAudioControls({ bgmMuted, bgmVolume, onToggleMute, onVolumeChange }) {
   return (
     <div className="bgm-audio-controls">
@@ -184,6 +195,7 @@ export function SelectionScreen({ operatorLabel, selectedScenario, roster, selec
       </div>
       <div className="selection-grid selection-grid-visual">
         {roster.map((character) => {
+          const agent = AGENTS[character.name];
           const selected = selectedAgents.includes(character.name);
           const previewing = hoveredCharacter === character.name && character.video;
           return (
@@ -217,6 +229,16 @@ export function SelectionScreen({ operatorLabel, selectedScenario, roster, selec
                 <div className={`character-selection-mark ${selected ? "visible" : ""}`} aria-hidden="true">
                   <span />
                 </div>
+              </div>
+              <div className="character-card-copy">
+                <h3>{character.name}</h3>
+                <p className="character-role">{agent.role}</p>
+                <p className="character-trait">
+                  <strong>Strong:</strong> {summarizeStrength(agent)}
+                </p>
+                <p className="character-trait character-trait-risk">
+                  <strong>Risk:</strong> {summarizeWeakness(agent)}
+                </p>
               </div>
             </button>
           );

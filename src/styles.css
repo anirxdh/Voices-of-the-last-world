@@ -522,6 +522,42 @@ input {
     0 0 26px rgba(122, 228, 255, 0.42);
 }
 
+.character-card-copy {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.9rem 0.3rem 0.15rem;
+  text-align: left;
+}
+
+.character-card-copy h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  color: #f4f8ff;
+}
+
+.character-role {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(223, 241, 255, 0.64);
+}
+
+.character-trait {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: rgba(233, 240, 248, 0.9);
+}
+
+.character-trait strong {
+  color: #ffffff;
+}
+
+.character-trait-risk {
+  color: rgba(255, 212, 212, 0.88);
+}
+
 .bottom-actions {
   display: flex;
   justify-content: flex-end;

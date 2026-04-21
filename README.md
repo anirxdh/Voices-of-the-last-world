@@ -35,25 +35,21 @@ This project is designed as:
 - Two autonomous agents debate each crisis in-character.
 - ElevenLabs voices drive character identity and mission narration.
 - The player shapes the final response without controlling the debate itself.
-- Kiro specs and prompts are included so the development workflow is visible, not implied.
+- Built with a Kiro spec-driven workflow and ElevenLabs voice generation.
 
 ---
 
-## Screens
-
-### Intro Experience
+## Scenarios
 
 <p align="center">
-  <img src="./public/assets/images/scenarios/silent-signal.png" alt="Intro and world mood" width="32%" />
+  <img src="./public/assets/images/scenarios/silent-signal.png" alt="Silent Signal" width="32%" />
   <img src="./public/assets/images/scenarios/mars-oxygen-collapse.png" alt="Mars Oxygen Collapse" width="32%" />
   <img src="./public/assets/images/scenarios/global-ai-hack.png" alt="Global AI Hack" width="32%" />
 </p>
 
-### Scenario Selection
-
 <p align="center">
-  <img src="./public/assets/images/scenarios/vanishing-city.png" alt="Vanishing City" width="49%" />
-  <img src="./public/assets/images/scenarios/archive-echo.png" alt="Archive Echo" width="49%" />
+  <img src="./public/assets/images/scenarios/vanishing-city.png" alt="Vanishing City" width="32%" />
+  <img src="./public/assets/images/scenarios/archive-echo.png" alt="Archive Echo" width="32%" />
 </p>
 
 ### Archive Minds
