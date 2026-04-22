@@ -6,7 +6,8 @@ const DEFAULT_VOICE_IDS = {
   "Ares Prime": "pNInz6obpgDQGcFmaJgB",
   "Nova Sage": "EXAVITQu4vr4xnSDxMaL",
   "Lady Astra": "pFZP5JQG7iQjIQuC4Bku",
-  "Core AI": "onwK4e9ZLuTAKqWW03F9"
+  "Core AI": "onwK4e9ZLuTAKqWW03F9",
+  "Archive System": "21m00Tcm4TlvDq8ikWAM"
 };
 
 const VOICE_SETTINGS = {
@@ -43,6 +44,13 @@ const VOICE_SETTINGS = {
     similarity_boost: 0.74,
     style: 0.02,
     speed: 0.78,
+    use_speaker_boost: true
+  },
+  "Archive System": {
+    stability: 0.82,
+    similarity_boost: 0.72,
+    style: 0.12,
+    speed: 0.9,
     use_speaker_boost: true
   }
 };
@@ -148,6 +156,9 @@ export function normalizeAgentName(name) {
   if (lowerName.includes("core") && lowerName.includes("ai")) {
     return "Core AI";
   }
+  if (lowerName.includes("archive") && lowerName.includes("system")) {
+    return "Archive System";
+  }
 
   // Return original if no match found
   return normalized;
@@ -236,8 +247,8 @@ async function playWithBrowserVoice(agentName, text) {
   await new Promise((resolve) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate =
-      normalizedName === "Ares Prime" ? 1.08 : normalizedName === "Core AI" ? 0.8 : normalizedName === "Nova Sage" ? 0.88 : 0.94;
-    utterance.pitch = normalizedName === "Lady Astra" ? 1.08 : normalizedName === "Core AI" ? 0.58 : 1;
+      normalizedName === "Ares Prime" ? 1.08 : normalizedName === "Core AI" ? 0.8 : normalizedName === "Nova Sage" ? 0.88 : normalizedName === "Archive System" ? 0.9 : 0.94;
+    utterance.pitch = normalizedName === "Lady Astra" ? 1.08 : normalizedName === "Core AI" ? 0.58 : normalizedName === "Archive System" ? 0.84 : 1;
     utterance.onend = resolve;
     utterance.onerror = resolve;
     window.speechSynthesis.speak(utterance);
@@ -290,6 +301,7 @@ export async function speakAgentLine(agentName, text) {
   activeObjectUrl = url;
   const audio = new Audio(url);
   activeAudio = audio;
+  let fallbackReason = "";
   await new Promise((resolve) => {
     audio.onended = resolve;
     audio.onerror = resolve;
@@ -328,12 +340,14 @@ export async function speakAgentLine(agentName, text) {
         audio.playbackRate = 0.92;
         audio.play().catch(async () => {
           console.warn(`⚠️ [BROWSER FALLBACK] ${normalizedName}: AudioContext play failed`);
+          fallbackReason = "playback_failed";
           await playWithBrowserVoice(normalizedName, text);
           resolve();
         });
       } catch {
         audio.play().catch(async () => {
           console.warn(`⚠️ [BROWSER FALLBACK] ${normalizedName}: audio.play() failed`);
+          fallbackReason = "playback_failed";
           await playWithBrowserVoice(normalizedName, text);
           resolve();
         });
@@ -343,9 +357,10 @@ export async function speakAgentLine(agentName, text) {
 
     audio.play().catch(async () => {
       console.warn(`⚠️ [BROWSER FALLBACK] ${normalizedName}: audio.play() failed`);
+      fallbackReason = "playback_failed";
       await playWithBrowserVoice(normalizedName, text);
       resolve();
     });
   });
-  return { provider: "elevenlabs" };
+  return fallbackReason ? { provider: "browser", reason: fallbackReason } : { provider: "elevenlabs" };
 }

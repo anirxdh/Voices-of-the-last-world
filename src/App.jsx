@@ -4,15 +4,12 @@ import { AUDIO, BACKGROUNDS, VIDEOS } from "./media.js";
 import { runSimulationEngine } from "./engine.js";
 import {
   BackgroundAudioControls,
-  ChoiceScreen,
   DebateScreen,
   IntroScreen,
-  ResultScreen,
   ScenarioScreen,
   SelectionScreen
 } from "./GameScreens.jsx";
 import {
-  OPERATOR_DIRECTIVES,
   SCENARIOS,
   applyPlayerChoice,
   mergeEngineOutputWithLocal,
@@ -36,9 +33,12 @@ export default function App() {
   const [selectedScenario, setSelectedScenario] = useState(() => SCENARIOS[0]);
   const [scenarioIndex, setScenarioIndex] = useState(0);
   const [activeVoiceIndex, setActiveVoiceIndex] = useState(-1);
-  const [browserFallback, setBrowserFallback] = useState(false);
+  const [browserFallback, setBrowserFallback] = useState("");
   const [selectedChoiceId, setSelectedChoiceId] = useState("");
   const [selectedDirectiveId, setSelectedDirectiveId] = useState("");
+  const [selectedExecutionId, setSelectedExecutionId] = useState("");
+  const [debateStage, setDebateStage] = useState("idle");
+  const [decisionBusy, setDecisionBusy] = useState(false);
   const [typedDialogue, setTypedDialogue] = useState("");
   const [hoveredCharacter, setHoveredCharacter] = useState("");
   const [debateMessages, setDebateMessages] = useState([]);
@@ -48,6 +48,11 @@ export default function App() {
   const introVideoRef = useRef(null);
   const ambientAudioRef = useRef(null);
   const typingIntervalRef = useRef(null);
+  const debateRunTokenRef = useRef(0);
+  const activePreviewCharacterRef = useRef("");
+  const previewTokenRef = useRef(0);
+  const previewAudioRef = useRef(null);
+  const resultNarratedRef = useRef("");
 
   const introVisible = introStage < 2;
   const activeScenario = phase === "scenario" ? currentScenario : selectedScenario;
@@ -62,24 +67,9 @@ export default function App() {
     [activeScenario, simulationAgents]
   );
 
-  const influence = simulation.meta?.influence;
-  const influenceEntries =
-    influence?.influences ??
-    activeDebateRoster.map((agentName, index) => ({
-      agent: agentName,
-      score: index === 0 ? 52 : 48,
-      verdict:
-        simulation.final_decision.led_by === agentName
-          ? `${agentName} drove the final call.`
-          : `${agentName} supported the outcome without dominating it.`
-    }));
-
-  const resultRoster = simulation.selected_agents.map((agentName) => ({
-    name: agentName,
-    card: getRosterEntry(agentName)
-  }));
   const choiceOptions = simulation.meta?.choice_options ?? [];
-  const directiveOptions = simulation.meta?.directive_options ?? OPERATOR_DIRECTIVES;
+  const toolOptions = simulation.meta?.tool_options ?? [];
+  const executionOptions = simulation.meta?.execution_options ?? [];
   const lastDebateMessage = debateMessages[debateMessages.length - 1];
   const showActiveTypingBubble =
     Boolean(activeLine && typedDialogue) &&
@@ -88,10 +78,8 @@ export default function App() {
       lastDebateMessage.text !== activeLine.text);
   const shouldPlayAmbient =
     !introVisible &&
-    (phase === "scenario" ||
-      phase === "selection" ||
-      phase === "decision" ||
-      phase === "result");
+    !hoveredCharacter &&
+    (phase === "scenario" || phase === "selection");
 
   useEffect(() => {
     if (!introVisible || !introVideoRef.current) return;
@@ -150,12 +138,16 @@ export default function App() {
     if (phase !== "debate") {
       setTypedDialogue("");
       setDebateMessages([]);
+      setDebateStage("idle");
+      setDecisionBusy(false);
       return undefined;
     }
 
-    let cancelled = false;
+    if (debateStage !== "opening") return undefined;
+
+    const token = ++debateRunTokenRef.current;
     setActiveVoiceIndex(-1);
-    setBrowserFallback(false);
+    setBrowserFallback("");
     setTypedDialogue("");
     setDebateMessages([]);
 
@@ -177,7 +169,7 @@ export default function App() {
         const lineDelay = Math.max(26, Math.min(74, durationMs / Math.max(text.length, 1)));
 
         typingIntervalRef.current = window.setInterval(() => {
-          if (cancelled) {
+          if (debateRunTokenRef.current !== token) {
             window.clearInterval(typingIntervalRef.current);
             typingIntervalRef.current = null;
             resolve();
@@ -195,12 +187,14 @@ export default function App() {
         }, lineDelay);
       });
 
-    const runDebate = async () => {
-      for (let index = 0; index < simulation.conversation.length; index += 1) {
-        if (cancelled) return;
+    const runOpening = async () => {
+      // Operator / system lines are text-only (no voice).
 
-        const line = simulation.conversation[index];
-        setActiveVoiceIndex(index);
+      const openingLines = simulation.conversation.slice(0, 2);
+      for (const line of openingLines) {
+        if (debateRunTokenRef.current !== token) return;
+        const speakerIndex = activeDebateRoster.indexOf(line.speaker);
+        setActiveVoiceIndex(speakerIndex);
         setTypedDialogue("");
 
         try {
@@ -208,55 +202,67 @@ export default function App() {
             speakAgentLine(line.speaker, line.text),
             revealLine(line.speaker, line.text)
           ]);
-          if (result?.provider === "browser") setBrowserFallback(true);
-          if (cancelled) return;
+          if (result?.provider === "browser" && result?.reason && result.reason !== "playback_failed") {
+            setBrowserFallback(result.reason);
+          }
+          if (debateRunTokenRef.current !== token) return;
         } catch {
-          if (cancelled) return;
+          if (debateRunTokenRef.current !== token) return;
         }
 
         setDebateMessages((current) => [...current, line]);
-        await new Promise((resolve) => window.setTimeout(resolve, 1000));
+        await new Promise((resolve) => window.setTimeout(resolve, 350));
       }
 
-      if (!cancelled) {
+      if (debateRunTokenRef.current === token) {
         setActiveVoiceIndex(-1);
         setTypedDialogue("");
-        window.setTimeout(() => {
-          if (!cancelled) {
-            setPhase("choice");
-          }
-        }, 700);
+        setDebateStage("strategy");
       }
     };
 
-    void runDebate();
+    void runOpening();
 
     return () => {
-      cancelled = true;
+      debateRunTokenRef.current += 1;
       if (typingIntervalRef.current) {
         window.clearInterval(typingIntervalRef.current);
         typingIntervalRef.current = null;
       }
       stopVoicePlayback();
     };
-  }, [phase, simulation]);
+  }, [phase, simulation, debateStage, activeDebateRoster]);
 
   useEffect(() => () => stopVoicePlayback(), []);
 
   useEffect(() => {
-    if (phase !== "result") return undefined;
+    if (phase === "selection") return undefined;
+    activePreviewCharacterRef.current = "";
+    previewTokenRef.current += 1;
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.currentTime = 0;
+      previewAudioRef.current = null;
+    }
+    stopVoicePlayback();
+    return undefined;
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "debate" || debateStage !== "result") return undefined;
+    const narrationKey = `${simulation.result}:${simulation.final_decision.summary}`;
+    if (resultNarratedRef.current === narrationKey) return undefined;
+    resultNarratedRef.current = narrationKey;
 
     const narrate = async () => {
-      try {
-        await speakAgentLine("Core AI", buildResultNarration(simulation, selectedScenario.scenario_title));
-      } catch {}
+      // Result narration is text-only (no voice).
     };
 
     void narrate();
     return () => {
       stopVoicePlayback();
     };
-  }, [phase, simulation, selectedScenario]);
+  }, [phase, debateStage, simulation, selectedScenario]);
 
   useEffect(() => {
     const envApiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
@@ -280,8 +286,24 @@ export default function App() {
   }
 
   function confirmScenario() {
+    activePreviewCharacterRef.current = "";
+    previewTokenRef.current += 1;
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.currentTime = 0;
+      previewAudioRef.current = null;
+    }
+    stopVoicePlayback();
     setSelectedScenario(currentScenario);
     setPhase("selection");
+  }
+
+  function selectScenario(scenario) {
+    setCurrentScenario(scenario);
+    const nextIndex = SCENARIOS.findIndex((entry) => entry.id === scenario.id);
+    if (nextIndex >= 0) {
+      setScenarioIndex(nextIndex);
+    }
   }
 
   function moveScenario(direction) {
@@ -307,27 +329,267 @@ export default function App() {
 
     setSelectedChoiceId("");
     setSelectedDirectiveId("");
+    setSelectedExecutionId("");
+    setBrowserFallback("");
+    setDebateStage("opening");
+    resultNarratedRef.current = "";
     setPhase("debate");
   }
 
   function deployAgents() {
     if (selectedAgents.length !== 2) return;
+    activePreviewCharacterRef.current = "";
+    previewTokenRef.current += 1;
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.currentTime = 0;
+      previewAudioRef.current = null;
+    }
+    stopVoicePlayback();
     void runSimulation();
   }
 
   function restartMission() {
+    activePreviewCharacterRef.current = "";
+    previewTokenRef.current += 1;
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.currentTime = 0;
+      previewAudioRef.current = null;
+    }
+    stopVoicePlayback();
     setPhase("scenario");
     setCurrentScenario(SCENARIOS[0]);
     setSelectedScenario(SCENARIOS[0]);
     setSelectedAgents([]);
     setSelectedChoiceId("");
     setSelectedDirectiveId("");
+    setSelectedExecutionId("");
+    setHoveredCharacter("");
+    setBrowserFallback("");
+    setScenarioIndex(0);
+    setDebateStage("idle");
+    resultNarratedRef.current = "";
   }
 
-  function resolveChoice() {
-    if (!selectedChoiceId || !selectedDirectiveId) return;
-    setSimulation((current) => applyPlayerChoice(current, selectedChoiceId, selectedDirectiveId));
-    setPhase("result");
+  async function playFollowupLines(lines) {
+    const token = ++debateRunTokenRef.current;
+
+    const revealLine = (speaker, text) =>
+      new Promise((resolve) => {
+        if (typingIntervalRef.current) {
+          window.clearInterval(typingIntervalRef.current);
+        }
+
+        setTypedDialogue("");
+        let charIndex = 0;
+        const durationMs = estimateSpeechDurationMs(speaker, text);
+        const lineDelay = Math.max(26, Math.min(74, durationMs / Math.max(text.length, 1)));
+
+        typingIntervalRef.current = window.setInterval(() => {
+          if (debateRunTokenRef.current !== token) {
+            window.clearInterval(typingIntervalRef.current);
+            typingIntervalRef.current = null;
+            resolve();
+            return;
+          }
+
+          charIndex += 1;
+          setTypedDialogue(text.slice(0, charIndex));
+          if (charIndex >= text.length) {
+            window.clearInterval(typingIntervalRef.current);
+            typingIntervalRef.current = null;
+            resolve();
+          }
+        }, lineDelay);
+      });
+
+    for (const line of lines) {
+      const speakerIndex = activeDebateRoster.indexOf(line.speaker);
+      setActiveVoiceIndex(speakerIndex);
+      setTypedDialogue("");
+      try {
+        const [result] = await Promise.all([
+          speakAgentLine(line.speaker, line.text),
+          revealLine(line.speaker, line.text)
+        ]);
+        if (result?.provider === "browser" && result?.reason && result.reason !== "playback_failed") {
+          setBrowserFallback(result.reason);
+        }
+      } catch {}
+      setDebateMessages((current) => [...current, line]);
+      await new Promise((resolve) => window.setTimeout(resolve, 320));
+    }
+
+    setActiveVoiceIndex(-1);
+    setTypedDialogue("");
+  }
+
+  function buildStrategyResponse(choice) {
+    const [left, right] = activeDebateRoster;
+    const lead = simulation.final_decision.led_by;
+    const support = lead === left ? right : left;
+    if (choice.kind === "correct") {
+      return [
+        { speaker: lead, text: "I’m mapping the quickest safe path and issuing the first commands." },
+        { speaker: support, text: "I’m watching for blowback and keeping the response stable as we move." }
+      ];
+    }
+    if (choice.kind === "risky") {
+      return [
+        { speaker: left, text: "I’m pushing the risky play, but I’m setting guardrails to prevent a cascade." },
+        { speaker: right, text: "I’m tightening control loops and preparing a fallback if it spikes." }
+      ];
+    }
+    return [
+      { speaker: left, text: "I’m containing the damage first so this doesn’t spiral." },
+      { speaker: right, text: "I’m building a backup route so we can recover if the first move fails." }
+    ];
+  }
+
+  function buildDirectiveResponse(directiveId) {
+    const [left, right] = activeDebateRoster;
+    const lead = simulation.final_decision.led_by;
+    const support = lead === left ? right : left;
+    const opener = (() => {
+      if (directiveId === "shield-civilians") return "I’m stabilizing civilians and keeping trust from collapsing.";
+      if (directiveId === "balanced-command") return "I’m coordinating a disciplined response so control doesn’t slip.";
+      return "I’m driving rapid containment and forcing the threat to retreat.";
+    })();
+
+    return [
+      { speaker: lead, text: opener },
+      { speaker: support, text: "I’m backing you up—monitoring the weak points and keeping the team aligned." }
+    ];
+  }
+
+  async function handleStrategyChoice(choiceId) {
+    if (decisionBusy) return;
+    const choice = choiceOptions.find((entry) => entry.id === choiceId);
+    if (!choice) return;
+    setDecisionBusy(true);
+    setSelectedChoiceId(choiceId);
+    setDebateMessages((current) => [...current, { speaker: "Operator", text: `Decision: ${choice.label}` }]);
+    await playFollowupLines(buildStrategyResponse(choice));
+    setDebateStage("tool");
+    setDecisionBusy(false);
+  }
+
+  async function handleDirectiveChoice(directiveId) {
+    if (decisionBusy || !selectedChoiceId) return;
+    const tool = toolOptions.find((entry) => entry.id === directiveId);
+    if (!tool) return;
+    setDecisionBusy(true);
+    setSelectedDirectiveId(directiveId);
+    activePreviewCharacterRef.current = "";
+    previewTokenRef.current += 1;
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.currentTime = 0;
+      previewAudioRef.current = null;
+    }
+    stopVoicePlayback();
+    setDebateMessages((current) => [...current, { speaker: "Operator", text: `Tool: ${tool.tool.label}` }]);
+    setSelectedDirectiveId(directiveId);
+    await playFollowupLines(buildDirectiveResponse(directiveId));
+    setDebateStage("execute");
+    setDecisionBusy(false);
+  }
+
+  function buildExecutionResponse(executionId, result) {
+    const [left, right] = activeDebateRoster;
+    const opener = (() => {
+      if (executionId === "careful-rollout") return "I’m rolling it out step-by-step to avoid new failures.";
+      if (executionId === "split-teams") return "I’m splitting the team—parallel actions to save time.";
+      return "I’m going all-in—maximum pressure until it breaks.";
+    })();
+
+    const closer = (() => {
+      if (result === "success") return "I’m confirming systems are stable and locking in the win.";
+      if (result === "partial_success") return "I’m patching what’s still bleeding so we don’t lose the aftermath.";
+      return "I’m pulling what we can from the wreckage and stopping secondary collapse.";
+    })();
+
+    return [
+      { speaker: left, text: opener },
+      { speaker: right, text: closer }
+    ];
+  }
+
+  async function handleExecutionChoice(executionId) {
+    if (decisionBusy || !selectedChoiceId || !selectedDirectiveId) return;
+    const executionOptions = simulation.meta?.execution_options ?? [];
+    const execution = executionOptions.find((entry) => entry.id === executionId);
+    if (!execution) return;
+    setDecisionBusy(true);
+    setSelectedExecutionId(executionId);
+    setDebateMessages((current) => [...current, { speaker: "Operator", text: `Finish: ${execution.label}` }]);
+    const nextSimulation = applyPlayerChoice(simulation, selectedChoiceId, selectedDirectiveId, executionId);
+    setSimulation(nextSimulation);
+    await playFollowupLines(buildExecutionResponse(executionId, nextSimulation.result));
+    setDebateStage("result");
+    setDecisionBusy(false);
+  }
+
+  function handleCharacterHover(agentName) {
+    setHoveredCharacter(agentName);
+
+    if (phase !== "selection") return;
+    if (activePreviewCharacterRef.current === agentName) return;
+
+    const rosterEntry = getRosterEntry(agentName);
+    activePreviewCharacterRef.current = agentName;
+    previewTokenRef.current += 1;
+    const token = previewTokenRef.current;
+    stopVoicePlayback();
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.currentTime = 0;
+      previewAudioRef.current = null;
+    }
+
+    if (rosterEntry?.previewAudio) {
+      const audio = new Audio(rosterEntry.previewAudio);
+      audio.preload = "auto";
+      previewAudioRef.current = audio;
+      audio.onended = () => {
+        if (previewAudioRef.current === audio) {
+          previewAudioRef.current = null;
+        }
+        if (previewTokenRef.current === token) {
+          activePreviewCharacterRef.current = "";
+          setHoveredCharacter("");
+        }
+      };
+      audio.onerror = () => {
+        if (previewAudioRef.current === audio) {
+          previewAudioRef.current = null;
+        }
+        if (previewTokenRef.current === token) {
+          activePreviewCharacterRef.current = "";
+          setHoveredCharacter("");
+        }
+      };
+      void audio.play().catch(() => {});
+      return;
+    }
+
+    void speakAgentLine(agentName, `${agentName}.`).finally(() => {
+      if (previewTokenRef.current !== token) return;
+      activePreviewCharacterRef.current = "";
+    });
+  }
+
+  function handleCharacterBlur() {
+    setHoveredCharacter("");
+    activePreviewCharacterRef.current = "";
+    previewTokenRef.current += 1;
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current.currentTime = 0;
+      previewAudioRef.current = null;
+    }
+    stopVoicePlayback();
   }
 
   return (
@@ -372,7 +634,7 @@ export default function App() {
             scenarioIndex={scenarioIndex}
             scenarios={SCENARIOS}
             onMoveScenario={moveScenario}
-            onSelectScenario={setCurrentScenario}
+            onSelectScenario={selectScenario}
             onContinue={confirmScenario}
           />
         ) : null}
@@ -385,8 +647,8 @@ export default function App() {
             selectedAgents={selectedAgents}
             hoveredCharacter={hoveredCharacter}
             onToggleAgent={toggleAgent}
-            onHoverCharacter={setHoveredCharacter}
-            onBlurCharacter={() => setHoveredCharacter("")}
+            onHoverCharacter={handleCharacterHover}
+            onBlurCharacter={handleCharacterBlur}
             onDeploy={deployAgents}
           />
         ) : null}
@@ -400,33 +662,20 @@ export default function App() {
             showActiveTypingBubble={showActiveTypingBubble}
             typedDialogue={typedDialogue}
             getRosterEntry={getRosterEntry}
+            debateStage={debateStage}
+            choiceOptions={choiceOptions}
+            toolOptions={toolOptions}
+            executionOptions={executionOptions}
+            simulation={simulation}
+            decisionBusy={decisionBusy}
+            onChooseStrategy={handleStrategyChoice}
+            onChooseTool={handleDirectiveChoice}
+            onChooseExecution={handleExecutionChoice}
+            onRestart={restartMission}
             browserFallback={browserFallback}
           />
         ) : null}
 
-        {phase === "choice" ? (
-          <ChoiceScreen
-            selectedScenario={selectedScenario}
-            choiceOptions={choiceOptions}
-            directiveOptions={directiveOptions}
-            selectedChoiceId={selectedChoiceId}
-            selectedDirectiveId={selectedDirectiveId}
-            onSelectChoice={setSelectedChoiceId}
-            onSelectDirective={setSelectedDirectiveId}
-            onResolve={resolveChoice}
-          />
-        ) : null}
-
-        {phase === "result" ? (
-          <ResultScreen
-            selectedScenario={selectedScenario}
-            simulation={simulation}
-            influenceEntries={influenceEntries}
-            resultRoster={resultRoster}
-            influence={influence}
-            onRestart={restartMission}
-          />
-        ) : null}
       </section>
     </main>
   );

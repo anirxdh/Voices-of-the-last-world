@@ -17,10 +17,10 @@ export function buildGreeting(name) {
 export function buildResultNarration(simulation, scenarioTitle) {
   const status =
     simulation.result === "success"
-      ? "Mission success."
+      ? "Mission saved."
       : simulation.result === "partial_success"
-        ? "Mission compromised."
-        : "Mission failed.";
+        ? "Mission barely held."
+        : "Mission lost.";
 
   return `${status} ${scenarioTitle}. ${simulation.meta.narrative.explanation}`;
 }

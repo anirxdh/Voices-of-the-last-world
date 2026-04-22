@@ -38,11 +38,13 @@ stability: ${currentStats.stability}
 time: ${currentStats.time}
 
 Rules:
-- Conversation must be 4 to 6 lines.
+- Conversation must be exactly 4 lines.
 - Each line should sound distinct to the speaker.
 - The two agents must disagree at least once.
-- The discussion should feel like realistic crisis reasoning, not game flavor text.
-- Keep the lines concrete, scenario-aware, and pressure-driven.
+- The discussion should feel like a tense live exchange, not a speech.
+- Keep the lines conversational, scenario-aware, and pressure-driven.
+- Each line must be short, ideally under 16 words.
+- Use direct language like a real mission exchange or text-thread under pressure.
 - The final decision is autonomous.
 - Determine which agent led the final decision.
 - Respect the game logic: finalScore = traitMatch + synergy - penalties.
@@ -63,7 +65,7 @@ function buildResponseSchema() {
       conversation: {
         type: "array",
         minItems: 4,
-        maxItems: 6,
+        maxItems: 4,
         items: {
           type: "object",
           additionalProperties: false,
@@ -97,6 +99,14 @@ function buildResponseSchema() {
       }
     }
   };
+}
+
+function compactConversationLine(text) {
+  const cleaned = String(text ?? "").replace(/\s+/g, " ").trim();
+  if (!cleaned) return cleaned;
+  const firstSentence = cleaned.split(/(?<=[.!?])\s+/)[0].trim();
+  if (firstSentence.length <= 96) return firstSentence;
+  return `${firstSentence.slice(0, 93).trimEnd()}...`;
 }
 
 export async function runSimulationEngine({ selectedAgents, scenario, currentStats }) {
@@ -152,9 +162,10 @@ export async function runSimulationEngine({ selectedAgents, scenario, currentSta
 
   // Normalize speaker names in conversation to ensure they match known agent names
   if (parsedOutput.conversation) {
-    parsedOutput.conversation = parsedOutput.conversation.map(line => ({
+    parsedOutput.conversation = parsedOutput.conversation.slice(0, 4).map(line => ({
       ...line,
-      speaker: normalizeAgentName(line.speaker)
+      speaker: normalizeAgentName(line.speaker),
+      text: compactConversationLine(line.text)
     }));
   }
 

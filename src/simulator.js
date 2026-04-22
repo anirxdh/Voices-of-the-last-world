@@ -97,7 +97,9 @@ export const SCENARIOS = [
     scenario_title: "Silent Signal",
     location: "Orbital Relay Silence Zone",
     scenario_description:
-      "An unknown AI signal is hijacking infrastructure control layers and redirecting critical systems without revealing its source.",
+      "A hidden signal is taking over key systems and no one knows where it is coming from.",
+    simple_brief: "A hidden signal is taking control of important systems.",
+    simple_goal: "Find the source and stop it before more systems fall.",
     required_traits: ["logic", "analysis", "pattern recognition"],
     bad_traits: ["low trust", "slow under pressure"],
     backdrop: SCENARIO_MEDIA["silent-signal"],
@@ -109,7 +111,9 @@ export const SCENARIOS = [
     scenario_title: "Mars Oxygen Collapse",
     location: "Arsia Dome, Mars Colony",
     scenario_description:
-      "A cascading fault in the colony oxygen lattice is dropping breathable air reserve levels by the minute. Panic is spreading through sealed habitation sectors.",
+      "The Mars colony is running out of air and people are starting to panic.",
+    simple_brief: "The Mars colony is losing air and people are scared.",
+    simple_goal: "Stabilize the air system and stop the panic.",
     required_traits: ["logic", "technical", "trust", "empathy"],
     bad_traits: ["panic", "low trust"],
     backdrop: SCENARIO_MEDIA["mars-oxygen-collapse"],
@@ -121,7 +125,9 @@ export const SCENARIOS = [
     scenario_title: "Global AI Hack",
     location: "Earth Grid Relay Network",
     scenario_description:
-      "Autonomous infrastructure systems across multiple continents are turning hostile after a coordinated exploit. Logistics, transport, and defense nodes are beginning to conflict.",
+      "A global hack has turned major AI systems hostile and cities are starting to lose control.",
+    simple_brief: "A global hack has turned major AI systems against the cities.",
+    simple_goal: "Cut off the hostile systems and keep essential services alive.",
     required_traits: ["logic", "efficiency", "technical", "systems"],
     bad_traits: ["low trust", "panic"],
     backdrop: SCENARIO_MEDIA["global-ai-hack"],
@@ -133,7 +139,9 @@ export const SCENARIOS = [
     scenario_title: "Vanishing City",
     location: "Copenhagen Null District",
     scenario_description:
-      "A reality glitch is erasing mapped streets, buildings, and people from sensor memory in waves. The city is physically present, but system perception is collapsing.",
+      "Parts of the city are disappearing from every system map, even though they still exist in real life.",
+    simple_brief: "Parts of the city are disappearing from every system map.",
+    simple_goal: "Stabilize the city grid before the whole district is lost.",
     required_traits: ["insight", "logic", "analysis"],
     bad_traits: ["speed", "low trust"],
     backdrop: SCENARIO_MEDIA["vanishing-city"],
@@ -145,7 +153,9 @@ export const SCENARIOS = [
     scenario_title: "Archive Echo",
     location: "The Archive Core",
     scenario_description:
-      "Internal AI corruption is causing archived minds to mirror, fragment, and overwrite each other. Strategic integrity is degrading from the inside.",
+      "The Archive itself is corrupting, and stored minds are breaking into unstable copies.",
+    simple_brief: "The Archive is corrupting and stored minds are splitting apart.",
+    simple_goal: "Contain the corruption without destroying the minds inside it.",
     required_traits: ["stability", "empathy", "logic"],
     bad_traits: ["destroys trust", "panic"],
     backdrop: SCENARIO_MEDIA["archive-echo"],
@@ -159,19 +169,19 @@ const SCENARIO_CHOICES = {
     {
       id: "verified-relays",
       kind: "correct",
-      label: "Trace the signal origin and restore only verified relays.",
+      label: "Trace the source and restore safe relays.",
       summary: "The hidden route is isolated before the hijack can spread into more infrastructure."
     },
     {
       id: "global-blackout",
       kind: "risky",
-      label: "Shut down every relay at once and rebuild from zero.",
+      label: "Black out every relay at once.",
       summary: "The signal slows, but the blackout destabilizes civilian systems across the grid."
     },
     {
       id: "counter-signal",
       kind: "wrong",
-      label: "Keep the grid live and flood the network with counter-signals.",
+      label: "Fight it live with counter-signals.",
       summary: "The source stays hidden and the corrupted routes multiply faster than the defense."
     }
   ],
@@ -179,19 +189,19 @@ const SCENARIO_CHOICES = {
     {
       id: "stabilize-and-calm",
       kind: "correct",
-      label: "Stabilize oxygen sectors and issue calm guided evacuation orders.",
+      label: "Patch oxygen and calm the colony.",
       summary: "Technical control and calm public guidance keep the colony alive long enough to recover."
     },
     {
       id: "seal-hard",
       kind: "risky",
-      label: "Seal every failing sector immediately and explain later.",
+      label: "Seal damaged sectors immediately.",
       summary: "The leak slows, but panic and mistrust spread through the sealed sectors."
     },
     {
       id: "manual-scramble",
       kind: "wrong",
-      label: "Send all crews to manual override stations at once.",
+      label: "Send everyone to manual override.",
       summary: "The lattice loses coordination and the human scramble worsens the collapse."
     }
   ],
@@ -199,19 +209,19 @@ const SCENARIO_CHOICES = {
     {
       id: "cut-and-preserve",
       kind: "correct",
-      label: "Sever hostile nodes while preserving essential civilian systems.",
+      label: "Cut hostile nodes, keep essentials live.",
       summary: "Containment stays surgical, trust holds, and the hostile mesh loses momentum."
     },
     {
       id: "military-override",
       kind: "risky",
-      label: "Route everything through emergency defense command.",
+      label: "Hand the whole grid to defense command.",
       summary: "The attack slows, but heavy-handed control damages legitimacy and public trust."
     },
     {
       id: "observe-first",
       kind: "wrong",
-      label: "Keep the network open and observe the hostile behavior longer.",
+      label: "Keep watching before acting.",
       summary: "The hostile systems gain more territory before containment even begins."
     }
   ],
@@ -219,19 +229,19 @@ const SCENARIO_CHOICES = {
     {
       id: "anchor-grid",
       kind: "correct",
-      label: "Anchor the perception grid and remap reality-critical sectors first.",
+      label: "Anchor the city grid first.",
       summary: "The city stays legible to its own systems and the collapse can be contained."
     },
     {
       id: "mass-evacuate",
       kind: "risky",
-      label: "Evacuate every district immediately and abandon the sensor map.",
+      label: "Evacuate everyone and abandon the map.",
       summary: "Lives are moved, but the city loses coordination and disappears faster from system memory."
     },
     {
       id: "trust-eyes",
       kind: "wrong",
-      label: "Rely on human visual confirmation instead of repairing the grid.",
+      label: "Trust human eyes alone.",
       summary: "Physical presence alone cannot stabilize a city the systems can no longer interpret."
     }
   ],
@@ -239,19 +249,19 @@ const SCENARIO_CHOICES = {
     {
       id: "quarantine-and-soothe",
       kind: "correct",
-      label: "Quarantine corrupted minds and stabilize the rest with low-friction intervention.",
+      label: "Quarantine corrupted minds gently.",
       summary: "The Archive regains coherence without triggering deeper identity fracture."
     },
     {
       id: "purge-fast",
       kind: "risky",
-      label: "Purge every unstable archive cluster immediately.",
+      label: "Purge unstable clusters immediately.",
       summary: "Corruption drops, but the violent purge destroys trust inside the Archive."
     },
     {
       id: "merge-streams",
       kind: "wrong",
-      label: "Merge fragmented minds into a shared recovery pool.",
+      label: "Merge every fragmented mind together.",
       summary: "The contamination spreads between minds instead of being contained."
     }
   ]
@@ -275,6 +285,24 @@ export const OPERATOR_DIRECTIVES = [
   }
 ];
 
+export const EXECUTION_OPTIONS = [
+  {
+    id: "careful-rollout",
+    label: "Careful",
+    summary: "Roll out the plan slowly and keep the team steady."
+  },
+  {
+    id: "split-teams",
+    label: "Split Teams",
+    summary: "Run two actions at once to save time."
+  },
+  {
+    id: "full-commit",
+    label: "Full Commit",
+    summary: "Push everything into the plan and end it fast."
+  }
+];
+
 const STRATEGY_WEIGHTS = {
   correct: 20,
   risky: 4,
@@ -291,6 +319,81 @@ const DIRECTIVE_EFFECTS = {
   "shield-civilians": { health: 2, energy: -3, trust: 5, stability: 4, time: -2 },
   "balanced-command": { health: 4, energy: -2, trust: 3, stability: 3, time: 1 },
   "aggressive-push": { health: 5, energy: 1, trust: -5, stability: -3, time: 4 }
+};
+
+const EXECUTION_EFFECTS = {
+  "careful-rollout": { health: 2, energy: -2, trust: 3, stability: 4, time: -1 },
+  "split-teams": { health: 1, energy: -1, trust: 0, stability: -1, time: 2 },
+  "full-commit": { health: 3, energy: 1, trust: -2, stability: -2, time: 3 }
+};
+
+const EXECUTION_SCORES = {
+  "careful-rollout": 5,
+  "split-teams": 3,
+  "full-commit": 1
+};
+
+const AGENT_TOOL_KITS = {
+  "Ares Prime": [
+    {
+      label: "Shock Command",
+      summary: "Hard-lock critical zones before the crisis spreads.",
+      traits: ["speed", "command"]
+    },
+    {
+      label: "Breach Strike",
+      summary: "Hit the failing system fast and force it offline.",
+      traits: ["response", "execution"]
+    }
+  ],
+  "Nova Sage": [
+    {
+      label: "Calmline Broadcast",
+      summary: "Stabilize civilians before panic breaks the mission.",
+      traits: ["trust", "empathy"]
+    },
+    {
+      label: "Human Shield Protocol",
+      summary: "Keep evacuation humane and coordinated.",
+      traits: ["morale", "stability"]
+    }
+  ],
+  "Lady Astra": [
+    {
+      label: "Consensus Weave",
+      summary: "Turn competing responses into one steady plan.",
+      traits: ["balance", "persuasion"]
+    },
+    {
+      label: "Signal Mediation",
+      summary: "Reduce conflict inside the command chain.",
+      traits: ["synergy", "insight"]
+    }
+  ],
+  "Core AI": [
+    {
+      label: "Optimization Mesh",
+      summary: "Route resources through the highest-yield path.",
+      traits: ["optimization", "efficiency"]
+    },
+    {
+      label: "Cold Cutover",
+      summary: "Strip away noise and preserve the critical core.",
+      traits: ["logic", "analysis"]
+    }
+  ],
+  "Turing-\u03A9": [
+    {
+      label: "Pattern Solver",
+      summary: "Find the governing fault before acting.",
+      traits: ["logic", "analysis"]
+    },
+    {
+      label: "Systems Trace",
+      summary: "Map the hidden structure of the failure.",
+      traits: ["technical", "pattern recognition"]
+    }
+  ]
 };
 
 const SCENARIO_DIRECTIVE_FIT = {
@@ -403,37 +506,37 @@ function buildLine(agentName, intent, scenario) {
   const humanCost = scenarioHumanCostText(scenario.id);
 
   if (agentName === "Turing-\u03A9") {
-    if (intent === "open") return `First we map ${focus}. Acting before that is noise.`;
-    if (intent === "push") return `Then we isolate the governing fault and prevent secondary failures.`;
-    if (intent === "challenge") return "Speed without structure widens the error field.";
-    return "Decision formed. We proceed with controlled intervention and constant observation.";
+    if (intent === "open") return `Map ${focus} first. Guessing now will waste the window.`;
+    if (intent === "push") return "Then isolate the fault and stop the cascade.";
+    if (intent === "challenge") return "Speed without structure only multiplies failure.";
+    return "Decision set. Controlled intervention, constant observation.";
   }
 
   if (agentName === "Ares Prime") {
-    if (intent === "open") return `We're losing time. Hit ${focus} now before it spreads.`;
-    if (intent === "push") return "We lock it down first, then clean up the mess after.";
-    if (intent === "challenge") return "If we keep talking in circles, this gets worse.";
-    return "Fine. Hard containment, fast push, no wasted motion.";
+    if (intent === "open") return `We're losing time. Hit ${focus} now.`;
+    if (intent === "push") return "Lock it down first. Cleanup comes after.";
+    if (intent === "challenge") return "Talk longer and this spreads.";
+    return "Fine. Hard containment. Fast push. Move.";
   }
 
   if (agentName === "Nova Sage") {
     if (intent === "open") return humanCost;
-    if (intent === "push") return "Then we calm people while we fix this, not after.";
-    if (intent === "challenge") return "A plan can work on paper and still break everyone living through it.";
-    return "So we move carefully, protect people, and keep them with us.";
+    if (intent === "push") return "Then calm people while we fix it, not after.";
+    if (intent === "challenge") return "A plan can save systems and still break everyone living through it.";
+    return "Move carefully. Protect people. Keep them with us.";
   }
 
   if (agentName === "Lady Astra") {
-    if (intent === "open") return "We need control, yes, but not so much force that we make the fear worse.";
-    if (intent === "push") return "Let one part of the plan stop the damage, and the other keep faith alive.";
+    if (intent === "open") return "Yes, we need control, but not so much force that fear takes over.";
+    if (intent === "push") return "Let one move stop the damage and another keep faith alive.";
     if (intent === "challenge") return "A severe answer may still be the wrong one.";
     return "Then we act with measure, not panic.";
   }
 
-  if (intent === "open") return `Priority is clear: secure ${focus} and cut everything irrelevant.`;
-  if (intent === "push") return "There is a clean containment path. We should take it now.";
-  if (intent === "challenge") return "Every extra second lowers the survival rate.";
-  return "Decision finalized. This is the highest-yield path.";
+  if (intent === "open") return `Priority: secure ${focus} and cut everything irrelevant.`;
+  if (intent === "push") return "There is a clean containment path. Take it now.";
+  if (intent === "challenge") return "Every extra second lowers survival probability.";
+  return "Decision finalized. Highest-yield path selected.";
 }
 
 function buildConversation(agentAName, agentBName, scenario, fitScore, synergyType) {
@@ -443,8 +546,7 @@ function buildConversation(agentAName, agentBName, scenario, fitScore, synergyTy
   return [
     { speaker: agentAName, text: buildLine(agentAName, "open", scenario) },
     { speaker: agentBName, text: buildLine(agentBName, disagree ? "challenge" : "open", scenario) },
-    { speaker: agentAName, text: buildLine(agentAName, disagree ? "challenge" : "push", scenario) },
-    { speaker: agentBName, text: buildLine(agentBName, "push", scenario) },
+    { speaker: agentAName, text: buildLine(agentAName, "push", scenario) },
     { speaker: closer, text: buildLine(closer, "close", scenario) }
   ];
 }
@@ -674,8 +776,113 @@ function buildWinningStrategy(scenario) {
   return "Match the crisis with the required traits early, avoid the scenario’s bad traits, and keep the team aligned under pressure.";
 }
 
+function buildAgentStatus(selectedAgents, result, ledBy = "") {
+  const [first, second] = selectedAgents;
+  const support = ledBy === first ? second : first;
+
+  if (result === "success") {
+    return selectedAgents.map((agent) => ({
+      agent,
+      health: 3,
+      state: "stable",
+      note: agent === ledBy ? "Led the successful push." : "Held the line."
+    }));
+  }
+
+  if (result === "partial_success") {
+    return selectedAgents.map((agent) => ({
+      agent,
+      health: agent === support ? 2 : 3,
+      state: agent === support ? "shaken" : "stable",
+      note: agent === support ? "Took strain during the operation." : "Came through the crisis."
+    }));
+  }
+
+  return selectedAgents.map((agent) => ({
+    agent,
+    health: agent === support ? 1 : 2,
+    state: agent === support ? "critical" : "shaken",
+    note: agent === support ? "Badly damaged by the failed call." : "Survived the collapse."
+  }));
+}
+
 function buildChoiceOptions(scenario) {
-  return SCENARIO_CHOICES[scenario.id] ?? [];
+  const choices = SCENARIO_CHOICES[scenario.id] ?? [];
+  // Debate step 1 should present only two options.
+  return choices.slice(0, 2).map((choice) => ({
+    ...choice,
+    tone: choice.kind === "correct" ? "stable" : "volatile"
+  }));
+}
+
+function buildScenarioReadout(scenario) {
+  if (scenario.id === "mars-oxygen-collapse") {
+    return [
+      { label: "Air", value: "Dropping", state: "critical" },
+      { label: "People", value: "Panicking", state: "volatile" },
+      { label: "Control", value: "Holding", state: "stable" }
+    ];
+  }
+
+  if (scenario.id === "global-ai-hack") {
+    return [
+      { label: "Threat", value: "Spreading", state: "critical" },
+      { label: "Cities", value: "Shaken", state: "volatile" },
+      { label: "Control", value: "Partial", state: "stable" }
+    ];
+  }
+
+  if (scenario.id === "vanishing-city") {
+    return [
+      { label: "City", value: "Fading", state: "critical" },
+      { label: "Grid", value: "Weak", state: "volatile" },
+      { label: "Routes", value: "Open", state: "stable" }
+    ];
+  }
+
+  if (scenario.id === "archive-echo") {
+    return [
+      { label: "Corruption", value: "Growing", state: "critical" },
+      { label: "Minds", value: "Unstable", state: "volatile" },
+      { label: "Core", value: "Holding", state: "stable" }
+    ];
+  }
+
+  return [
+    { label: "Signal", value: "Hidden", state: "critical" },
+    { label: "Systems", value: "Shaken", state: "volatile" },
+    { label: "Routes", value: "Open", state: "stable" }
+  ];
+}
+
+function pickToolByTraits(agentName, preferredTraits) {
+  const tools = AGENT_TOOL_KITS[agentName] ?? [];
+  return (
+    tools.find((tool) => tool.traits.some((trait) => preferredTraits.includes(trait))) ??
+    tools[0] ??
+    {
+      label: `${agentName} Tool`,
+      summary: "Apply the agent's preferred operating method.",
+      traits: []
+    }
+  );
+}
+
+function buildToolOptions(selectedAgents) {
+  return [
+    {
+      id: "shield-civilians",
+      label: "Steady",
+      summary: "Calm the situation and protect trust.",
+      tool: pickToolByTraits(selectedAgents[0], ["trust", "empathy", "morale", "stability"])
+    },
+    {
+      id: "balanced-command",
+      label: "Balance",
+      summary: "Keep control without pushing too hard.",
+      tool: pickToolByTraits(selectedAgents[1], ["balance", "logic", "analysis", "persuasion"])
+    }
+  ];
 }
 
 function getDirective(agentNames, directiveId) {
@@ -734,21 +941,26 @@ function mergeEffects(baseEffects, deltaEffects) {
   };
 }
 
-function resolveInteractiveOutcome(simulation, optionId, directiveId) {
+function resolveInteractiveOutcome(simulation, optionId, directiveId, executionId = "split-teams") {
   const choice = simulation.meta?.choice_options?.find((entry) => entry.id === optionId);
   const directiveScore = scoreDirective(simulation, directiveId);
+  const execution = EXECUTION_OPTIONS.find((entry) => entry.id === executionId);
 
-  if (!choice || !directiveScore.directive) {
+  if (!choice || !directiveScore.directive || !execution) {
     return null;
   }
 
   const teamFit = simulation.meta?.fit_score ?? 0;
   const strategyScore = STRATEGY_WEIGHTS[choice.kind] ?? 0;
-  const finalScore = clamp(teamFit + strategyScore + directiveScore.score, 0, 100);
+  const executionScore = EXECUTION_SCORES[executionId] ?? 0;
+  const finalScore = clamp(teamFit + strategyScore + directiveScore.score + executionScore, 0, 100);
   const result = finalScore >= 72 ? "success" : finalScore >= 46 ? "partial_success" : "failure";
   const effects = mergeEffects(
     simulation.effects,
-    mergeEffects(STRATEGY_EFFECTS[choice.kind] ?? STRATEGY_EFFECTS.risky, DIRECTIVE_EFFECTS[directiveId])
+    mergeEffects(
+      mergeEffects(STRATEGY_EFFECTS[choice.kind] ?? STRATEGY_EFFECTS.risky, DIRECTIVE_EFFECTS[directiveId]),
+      EXECUTION_EFFECTS[executionId] ?? EXECUTION_EFFECTS["split-teams"]
+    )
   );
   const finalStats = Object.fromEntries(
     Object.entries(INITIAL_STATS).map(([key, value]) => [key, clamp(value + effects[key], 0, 100)])
@@ -757,8 +969,10 @@ function resolveInteractiveOutcome(simulation, optionId, directiveId) {
   return {
     choice,
     directive: directiveScore.directive,
+    execution,
     strategyScore,
     directiveValue: directiveScore.score,
+    executionScore,
     finalScore,
     result,
     effects,
@@ -839,7 +1053,9 @@ export function simulateScenario(scenario, selectedAgents) {
   const narrative = buildResultNarrative(agentAName, agentBName, scenario, synergy, result);
   const winningStrategy = buildWinningStrategy(scenario);
   const choiceOptions = buildChoiceOptions(scenario);
+  const toolOptions = buildToolOptions(selectedAgents);
   const influence = buildInfluence(agentAName, agentBName, scenario, decision, fitScore, synergy);
+  const agentStatus = buildAgentStatus(selectedAgents, result, decision.led_by);
 
   return {
     scenario_title: scenario.scenario_title,
@@ -865,44 +1081,52 @@ export function simulateScenario(scenario, selectedAgents) {
       base_damage: baseDamage,
       narrative,
       winning_strategy: winningStrategy,
+      scenario_readout: buildScenarioReadout(scenario),
       choice_options: choiceOptions,
+      tool_options: toolOptions,
+      // Final "finish" step should present only two options.
+      execution_options: EXECUTION_OPTIONS.slice(0, 2),
       directive_options: OPERATOR_DIRECTIVES,
       influence,
+      agent_status: agentStatus,
       why,
       final_stats: finalStats
     }
   };
 }
 
-export function applyPlayerChoice(simulation, optionId, directiveId) {
-  const resolution = resolveInteractiveOutcome(simulation, optionId, directiveId);
+export function applyPlayerChoice(simulation, optionId, directiveId, executionId = "split-teams") {
+  const resolution = resolveInteractiveOutcome(simulation, optionId, directiveId, executionId);
   if (!resolution) return simulation;
 
-  const { choice, directive, strategyScore, directiveValue, finalScore, result, effects, finalStats } = resolution;
+  const { choice, directive, execution, strategyScore, directiveValue, executionScore, finalScore, result, effects, finalStats } = resolution;
   const next = structuredClone(simulation);
   next.meta.choice = choice;
   next.meta.directive = directive;
+  next.meta.execution = execution;
   next.meta.score_breakdown = {
     team_fit: simulation.meta?.fit_score ?? 0,
     strategy: strategyScore,
     directive: directiveValue,
+    execution: executionScore,
     final: finalScore
   };
   next.effects = effects;
   next.result = result;
   next.meta.final_stats = finalStats;
-  next.final_decision.summary = `${choice.label} ${directive.summary}`;
-  next.final_decision.rationale = `The operator committed to ${directive.label.toLowerCase()} after the agents identified their preferred path.`;
+  next.meta.agent_status = buildAgentStatus(next.selected_agents, result, next.final_decision.led_by);
+  next.final_decision.summary = `${choice.label} ${directive.summary} ${execution.summary}`;
+  next.final_decision.rationale = `The operator committed to ${directive.label.toLowerCase()} with a ${execution.label.toLowerCase()} finish after the agents identified their preferred path.`;
 
   if (result === "success") {
     next.meta.narrative.title = "You saved them.";
-    next.meta.narrative.explanation = `${choice.summary} ${directive.label} matched the crisis and gave the team a clean execution window.`;
+    next.meta.narrative.explanation = `${choice.summary} ${directive.label} matched the crisis and ${execution.label.toLowerCase()} kept the finish clean.`;
   } else if (result === "partial_success") {
-    next.meta.narrative.title = "You held the line.";
-    next.meta.narrative.explanation = `${choice.summary} ${directive.label} helped, but the response still paid in trust, time, or stability.`;
+    next.meta.narrative.title = "You barely held the line.";
+    next.meta.narrative.explanation = `${choice.summary} ${directive.label} helped, but ${execution.label.toLowerCase()} still cost trust, time, or stability.`;
   } else {
-    next.meta.narrative.title = "The mission slipped.";
-    next.meta.narrative.explanation = `${choice.summary} ${directive.label} pushed the response off the ideal track and the crisis outpaced containment.`;
+    next.meta.narrative.title = "You lost the operation.";
+    next.meta.narrative.explanation = `${choice.summary} ${directive.label} plus ${execution.label.toLowerCase()} pushed the response off track and the crisis outran containment.`;
   }
 
   return next;
