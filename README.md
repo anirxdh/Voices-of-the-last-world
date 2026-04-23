@@ -15,6 +15,10 @@
   <img alt="Kiro" src="https://img.shields.io/badge/Kiro-Spec%20Driven-111827?style=for-the-badge" />
 </p>
 
+<p align="center">
+  <a href="https://voices-of-the-last-world.vercel.app"><strong>🚀 Live Demo → voices-of-the-last-world.vercel.app</strong></a>
+</p>
+
 ---
 
 ## Overview
